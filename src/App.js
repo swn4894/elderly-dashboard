@@ -24,7 +24,7 @@ function AppInner() {
           query: listWatchData,
           variables: {
             filter: { deviceId: { eq: deviceId } },
-            limit: 50,
+            limit: 5,
             nextToken,
           },
           authMode: "AMAZON_COGNITO_USER_POOLS",
