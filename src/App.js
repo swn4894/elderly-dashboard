@@ -3,17 +3,16 @@ import { Authenticator, useAuthenticator } from "@aws-amplify/ui-react";
 import { client } from "./api/amplifyClient";
 import { getCaretakerByUsername, listWatchData } from "./graphql/queries";
 import { onCreateWatchData } from "./graphql/subscriptions";
-import { fetchAuthSession } from "@aws-amplify/auth";
 import "@aws-amplify/ui-react/styles.css";
 
 function AppInner() {
-  const { user, signOut } = useAuthenticator((context) => [context.user]);
+  const { user, signOut } = useAuthenticator((ctx) => [ctx.user]);
   const [caretaker, setCaretaker] = useState(null);
   const [watchDataByDevice, setWatchDataByDevice] = useState({});
   const [loading, setLoading] = useState(true);
-  const subscriptionRefs = useRef({});
+  const subscriptionRef = useRef(null);
 
-  // 🔹 Paginate to always get all items, then slice to 5 most recent
+  // Fetch recent watch data for a device
   const fetchRecentWatchData = async (deviceId) => {
     const results = [];
     let nextToken = null;
@@ -23,7 +22,7 @@ function AppInner() {
           query: listWatchData,
           variables: {
             filter: { deviceId: { eq: deviceId } },
-            limit: 50, // fetch enough to cover multiple pages
+            limit: 50,
             nextToken,
           },
           authMode: "AMAZON_COGNITO_USER_POOLS",
@@ -35,20 +34,19 @@ function AppInner() {
         nextToken = payload.nextToken || null;
       } while (nextToken);
 
-      // ✅ sort by timestamp (newest first) and slice to latest 5
       return results
-        .sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1))
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
         .slice(0, 5);
     } catch (err) {
-      console.error(`❌ Error fetching watch data for ${deviceId}:`, err);
+      console.error(`Error fetching watch data for ${deviceId}:`, err);
       return [];
     }
   };
 
+  // Fetch caretaker info
   const fetchCaretaker = async (username) => {
     try {
       setLoading(true);
-      console.log("🔍 Fetching caretaker for username:", username);
       const resp = await client.graphql({
         query: getCaretakerByUsername,
         variables: { username },
@@ -58,7 +56,7 @@ function AppInner() {
       setCaretaker(ct);
       return ct;
     } catch (err) {
-      console.error("❌ Error fetching caretaker:", err);
+      console.error("Error fetching caretaker:", err);
       setCaretaker(null);
       return null;
     } finally {
@@ -66,81 +64,63 @@ function AppInner() {
     }
   };
 
+  // Load all devices data
   const loadAllDevicesData = async (deviceIds) => {
     setLoading(true);
     const map = {};
     for (const deviceId of deviceIds) {
-      const items = await fetchRecentWatchData(deviceId);
-      map[deviceId] = items;
-      console.log(`📦 Loaded ${items.length} items for ${deviceId}`);
+      map[deviceId] = await fetchRecentWatchData(deviceId);
     }
     setWatchDataByDevice(map);
     setLoading(false);
   };
 
-  const startSubscriptions = async (deviceIds = []) => {
-    Object.values(subscriptionRefs.current).forEach((sub) => sub?.unsubscribe?.());
-    subscriptionRefs.current = {};
+  // Start subscription for new WatchData
+  const startSubscription = (deviceIds) => {
+    // Clean up old subscription
+    subscriptionRef.current?.unsubscribe?.();
 
-    try {
-      const session = await fetchAuthSession();
-      const jwt = session?.tokens?.idToken?.toString();
+    subscriptionRef.current = client
+      .graphql({
+        query: onCreateWatchData,
+        authMode: "AMAZON_COGNITO_USER_POOLS",
+      })
+      .subscribe({
+        next: ({ data }) => {
+          const newItem = data?.onCreateWatchData;
+          if (!newItem || !deviceIds.includes(newItem.deviceId)) return;
 
-      for (const deviceId of deviceIds) {
-        console.log(`🚀 Starting subscription for ${deviceId}`);
-        const observable = client.graphql({
-          query: onCreateWatchData,
-          variables: { deviceId },
-          authMode: "AMAZON_COGNITO_USER_POOLS",
-          authToken: jwt,
-        });
+          console.log("🔔 New WatchData:", newItem);
 
-        const sub = observable.subscribe({
-          next: ({ data }) => {
-            const newItem = data?.onCreateWatchData;
-            if (!newItem) return;
-            if (newItem.deviceId !== deviceId) return;
-            console.log(`🔔 New data for ${deviceId}:`, newItem);
-
-            setWatchDataByDevice((prev) => {
-              const curr = prev[deviceId] || [];
-              const updated = [newItem, ...curr]
-                .sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1))
-                .slice(0, 5);
-              return { ...prev, [deviceId]: updated };
-            });
-          },
-          error: (err) => {
-            console.error(`❌ Subscription error for ${deviceId}:`, err);
-          },
-        });
-
-        subscriptionRefs.current[deviceId] = sub;
-        console.log(`✅ Subscription started for ${deviceId}`);
-      }
-    } catch (err) {
-      console.error("❌ Failed to start subscriptions:", err);
-    }
+          setWatchDataByDevice((prev) => {
+            const curr = prev[newItem.deviceId] || [];
+            const updated = [newItem, ...curr]
+              .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+              .slice(0, 5);
+            return { ...prev, [newItem.deviceId]: updated };
+          });
+        },
+        error: (err) => console.error("Subscription error:", err),
+      });
   };
 
+  // Initial load
   useEffect(() => {
     if (!user?.username) return;
     (async () => {
       const ct = await fetchCaretaker(user.username);
       if (ct?.assignedElderly?.length > 0) {
         await loadAllDevicesData(ct.assignedElderly);
-        await startSubscriptions(ct.assignedElderly);
+        startSubscription(ct.assignedElderly);
       } else {
-        console.log("ℹ️ Caretaker has no assigned elderly.");
         setWatchDataByDevice({});
       }
     })();
   }, [user]);
 
+  // Clean up subscription on unmount
   useEffect(() => {
-    return () => {
-      Object.values(subscriptionRefs.current).forEach((sub) => sub?.unsubscribe?.());
-    };
+    return () => subscriptionRef.current?.unsubscribe?.();
   }, []);
 
   return (
@@ -163,7 +143,6 @@ function AppInner() {
       </div>
 
       <h2>Your Assigned Elderly</h2>
-
       {loading ? (
         <p>Loading dashboard...</p>
       ) : caretaker && caretaker.assignedElderly?.length > 0 ? (
@@ -171,15 +150,14 @@ function AppInner() {
           const items = watchDataByDevice[deviceId] || [];
           return (
             <div key={deviceId} style={{ marginBottom: 24 }}>
-              <h3 style={{ color: "#444" }}>
+              <h3>
                 Elderly {idx + 1}: Device ID {deviceId}
               </h3>
               {items.length > 0 ? (
                 <ul>
                   {items.map((d, i) => (
                     <li key={`${d.deviceId}-${d.timestamp}-${i}`}>
-                      <strong>{d.timestamp}</strong> — HR: {d.heartRate}, Motion: {d.motion}, Status:{" "}
-                      {d.status}
+                      <strong>{d.timestamp}</strong> — HR: {d.heartRate}, Motion: {d.motion}, Status: {d.status}, Moving: {d.isMoving ? "Yes" : "No"}
                     </li>
                   ))}
                 </ul>
