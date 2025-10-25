@@ -17,6 +17,20 @@
 .env.development.local
 .env.test.local
 .env.production.local
+.env
+.claude
+
+# AWS credentials and config
+aws-exports.js
+awsconfig.js
+src/aws-exports.js
+src/awsconfig.js
+
+# Local scripts with credentials
+create-caretaker.js
+create-caretaker-dynamodb.js
+update-caretaker-email.js
+populate-watch-data.js
 
 npm-debug.log*
 yarn-debug.log*
