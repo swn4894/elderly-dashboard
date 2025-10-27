@@ -43,6 +43,7 @@ export const createCaretaker = /* GraphQL */ `
   mutation CreateCaretaker($input: CreateCaretakerInput!) {
     createCaretaker(input: $input) {
       caretakerID
+      username
       name
       email
       assignedElderly
