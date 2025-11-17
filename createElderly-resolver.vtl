@@ -1,0 +1,42 @@
+{
+  "version": "2017-02-28",
+  "operation": "PutItem",
+  "key": {
+    #if($ctx.args.input.elderlyID)
+      "elderlyID": $util.dynamodb.toDynamoDBJson($ctx.args.input.elderlyID)
+    #else
+      "elderlyID": $util.dynamodb.toDynamoDBJson($util.autoId())
+    #end
+  },
+  "attributeValues": {
+    "name": $util.dynamodb.toDynamoDBJson($ctx.args.input.name),
+    "deviceId": $util.dynamodb.toDynamoDBJson($ctx.args.input.deviceId)
+    #if($ctx.args.input.age)
+      ,"age": $util.dynamodb.toDynamoDBJson($ctx.args.input.age)
+    #end
+    #if($ctx.args.input.medicalNotes)
+      ,"medicalNotes": $util.dynamodb.toDynamoDBJson($ctx.args.input.medicalNotes)
+    #end
+    #if($ctx.args.input.heartRate)
+      ,"heartRate": $util.dynamodb.toDynamoDBJson($ctx.args.input.heartRate)
+    #end
+    #if($ctx.args.input.bloodPressure)
+      ,"bloodPressure": $util.dynamodb.toDynamoDBJson($ctx.args.input.bloodPressure)
+    #end
+    #if($ctx.args.input.allergies)
+      ,"allergies": $util.dynamodb.toDynamoDBJson($ctx.args.input.allergies)
+    #end
+    #if($ctx.args.input.caretakerID)
+      ,"caretakerID": $util.dynamodb.toDynamoDBJson($ctx.args.input.caretakerID)
+    #end
+    #if($ctx.args.input.familyMemberName)
+      ,"familyMemberName": $util.dynamodb.toDynamoDBJson($ctx.args.input.familyMemberName)
+    #end
+    #if($ctx.args.input.familyMemberRelationship)
+      ,"familyMemberRelationship": $util.dynamodb.toDynamoDBJson($ctx.args.input.familyMemberRelationship)
+    #end
+    #if($ctx.args.input.familyMemberEmail)
+      ,"familyMemberEmail": $util.dynamodb.toDynamoDBJson($ctx.args.input.familyMemberEmail)
+    #end
+  }
+}

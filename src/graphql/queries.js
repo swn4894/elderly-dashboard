@@ -57,6 +57,7 @@ export const listCaretakers = /* GraphQL */ `
     listCaretakers(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         caretakerID
+        username
         name
         email
         assignedElderly
@@ -83,6 +84,58 @@ export const getDashboardData = /* GraphQL */ `
         motion
         status
       }
+    }
+  }
+`;
+
+// Elderly queries
+export const getElderly = /* GraphQL */ `
+  query GetElderly($elderlyID: ID!) {
+    getElderly(elderlyID: $elderlyID) {
+      elderlyID
+      deviceId
+      name
+      age
+      medicalNotes
+      caretakerID
+      familyMemberName
+      familyMemberRelationship
+      familyMemberEmail
+    }
+  }
+`;
+
+export const listElderly = /* GraphQL */ `
+  query ListElderly($filter: TableElderlyFilterInput, $limit: Int, $nextToken: String) {
+    listElderly(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        elderlyID
+        deviceId
+        name
+        age
+        medicalNotes
+        caretakerID
+        familyMemberName
+        familyMemberRelationship
+        familyMemberEmail
+      }
+      nextToken
+    }
+  }
+`;
+
+export const getElderlyByDeviceId = /* GraphQL */ `
+  query GetElderlyByDeviceId($deviceId: String!) {
+    getElderlyByDeviceId(deviceId: $deviceId) {
+      elderlyID
+      deviceId
+      name
+      age
+      medicalNotes
+      caretakerID
+      familyMemberName
+      familyMemberRelationship
+      familyMemberEmail
     }
   }
 `;

@@ -20,6 +20,24 @@
 .env
 .claude
 
+# Documentation files
+*_SUMMARY.md
+*_GUIDE.md
+*_COMPLETE.md
+*_RESULTS.md
+APPSYNC_SCHEMA_UPDATE.md
+PATIENT_CLI_COMMANDS.md
+QUICK_FIX_FOR_REDIET2.md
+
+# Lambda deployment files
+lambda_function.zip
+
+# Deployment scripts (optional - uncomment if you want to exclude)
+# deploy-*.sh
+# fix-*.sh
+# manage-*.sh
+# update-*.sh
+
 # AWS credentials and config
 aws-exports.js
 awsconfig.js

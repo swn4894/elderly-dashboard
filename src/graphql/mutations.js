@@ -66,9 +66,52 @@ export const deleteCaretaker = /* GraphQL */ `
   mutation DeleteCaretaker($input: DeleteCaretakerInput!) {
     deleteCaretaker(input: $input) {
       caretakerID
+    }
+  }
+`;
+
+// Elderly mutations
+export const createElderly = /* GraphQL */ `
+  mutation CreateElderly($input: CreateElderlyInput!) {
+    createElderly(input: $input) {
+      elderlyID
+      deviceId
       name
-      email
-      assignedElderly
+      age
+      medicalNotes
+      caretakerID
+      familyMemberName
+      familyMemberRelationship
+      familyMemberEmail
+    }
+  }
+`;
+
+export const updateElderly = /* GraphQL */ `
+  mutation UpdateElderly($input: UpdateElderlyInput!) {
+    updateElderly(input: $input) {
+      elderlyID
+      deviceId
+      name
+      age
+      medicalNotes
+      caretakerID
+      familyMemberName
+      familyMemberRelationship
+      familyMemberEmail
+    }
+  }
+`;
+
+export const deleteElderly = /* GraphQL */ `
+  mutation DeleteElderly($input: DeleteElderlyInput!) {
+    deleteElderly(input: $input) {
+      elderlyID
+      deviceId
+      name
+      age
+      medicalNotes
+      caretakerID
     }
   }
 `;

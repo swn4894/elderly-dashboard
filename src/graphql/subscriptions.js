@@ -71,3 +71,43 @@ export const onDeleteCaretaker = /* GraphQL */ `
     }
   }
 `;
+
+// Elderly subscriptions
+export const onCreateElderly = /* GraphQL */ `
+  subscription OnCreateElderly {
+    onCreateElderly {
+      elderlyID
+      deviceId
+      name
+      age
+      medicalNotes
+      caretakerID
+    }
+  }
+`;
+
+export const onUpdateElderly = /* GraphQL */ `
+  subscription OnUpdateElderly {
+    onUpdateElderly {
+      elderlyID
+      deviceId
+      name
+      age
+      medicalNotes
+      caretakerID
+    }
+  }
+`;
+
+export const onDeleteElderly = /* GraphQL */ `
+  subscription OnDeleteElderly {
+    onDeleteElderly {
+      elderlyID
+      deviceId
+      name
+      age
+      medicalNotes
+      caretakerID
+    }
+  }
+`;
