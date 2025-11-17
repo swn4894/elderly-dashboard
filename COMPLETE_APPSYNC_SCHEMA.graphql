@@ -1,0 +1,309 @@
+type Caretaker {
+    caretakerID: Int!
+    username: String!
+    name: String!
+    email: String!
+    assignedElderly: [String!]!
+}
+
+type CaretakerConnection {
+    items: [Caretaker]
+    nextToken: String
+}
+
+type Elderly {
+    elderlyID: ID!
+    deviceId: String!
+    name: String!
+    age: Int
+    medicalNotes: String
+    caretakerID: String
+    familyMemberName: String
+    familyMemberRelationship: String
+    familyMemberEmail: String
+}
+
+type ElderlyConnection {
+    items: [Elderly]
+    nextToken: String
+}
+
+type DashboardData {
+    caretaker: Caretaker!
+    watchData: [WatchData!]!
+}
+
+type WatchData {
+    deviceId: String!
+    timestamp: String!
+    heartRate: Int!
+    isMoving: Boolean!
+    motion: Float!
+    status: String!
+}
+
+type WatchDataConnection {
+    items: [WatchData]
+    nextToken: String
+}
+
+type Mutation {
+    createWatchData(input: CreateWatchDataInput!): WatchData
+    updateWatchData(input: UpdateWatchDataInput!): WatchData
+    deleteWatchData(input: DeleteWatchDataInput!): WatchData
+    createCaretaker(input: CreateCaretakerInput!): Caretaker
+    updateCaretaker(input: UpdateCaretakerInput!): Caretaker
+    deleteCaretaker(input: DeleteCaretakerInput!): Caretaker
+    createElderly(input: CreateElderlyInput!): Elderly
+    updateElderly(input: UpdateElderlyInput!): Elderly
+    deleteElderly(input: DeleteElderlyInput!): Elderly
+}
+
+type Query {
+    getWatchData(deviceId: String!, timestamp: String!): WatchData
+    listWatchData(filter: TableWatchDataFilterInput, limit: Int, nextToken: String): WatchDataConnection
+    getCaretaker(caretakerID: Int!): Caretaker
+    listCaretakers(filter: TableCaretakerFilterInput, limit: Int, nextToken: String): CaretakerConnection
+    getDashboardData(username: String!): DashboardData
+    getCaretakerByUsername(username: String!): Caretaker
+    getElderly(elderlyID: ID!): Elderly
+    listElderly(filter: TableElderlyFilterInput, limit: Int, nextToken: String): ElderlyConnection
+    getElderlyByDeviceId(deviceId: String!): Elderly
+}
+
+type Subscription {
+    onCreateWatchData(
+        deviceId: String,
+        timestamp: String,
+        heartRate: Int,
+        isMoving: Boolean,
+        motion: Float
+    ): WatchData
+        @aws_subscribe(mutations: ["createWatchData"])
+    onUpdateWatchData(
+        deviceId: String,
+        timestamp: String,
+        heartRate: Int,
+        isMoving: Boolean,
+        motion: Float
+    ): WatchData
+        @aws_subscribe(mutations: ["updateWatchData"])
+    onDeleteWatchData(
+        deviceId: String,
+        timestamp: String,
+        heartRate: Int,
+        isMoving: Boolean,
+        motion: Float
+    ): WatchData
+        @aws_subscribe(mutations: ["deleteWatchData"])
+    onCreateCaretaker(
+        caretakerID: Int,
+        name: String,
+        email: String,
+        assignedElderly: [String!]
+    ): Caretaker
+        @aws_subscribe(mutations: ["createCaretaker"])
+    onUpdateCaretaker(
+        caretakerID: Int,
+        name: String,
+        email: String,
+        assignedElderly: [String!]
+    ): Caretaker
+        @aws_subscribe(mutations: ["updateCaretaker"])
+    onDeleteCaretaker(
+        caretakerID: Int,
+        name: String,
+        email: String,
+        assignedElderly: [String!]
+    ): Caretaker
+        @aws_subscribe(mutations: ["deleteCaretaker"])
+    onCreateElderly(
+        elderlyID: ID,
+        deviceId: String,
+        name: String
+    ): Elderly
+        @aws_subscribe(mutations: ["createElderly"])
+    onUpdateElderly(
+        elderlyID: ID,
+        deviceId: String,
+        name: String
+    ): Elderly
+        @aws_subscribe(mutations: ["updateElderly"])
+    onDeleteElderly(
+        elderlyID: ID,
+        deviceId: String,
+        name: String
+    ): Elderly
+        @aws_subscribe(mutations: ["deleteElderly"])
+}
+
+input CreateCaretakerInput {
+    caretakerID: Int!
+    username: String!
+    name: String!
+    email: String!
+    assignedElderly: [String!]!
+}
+
+input UpdateCaretakerInput {
+    caretakerID: Int!
+    username: String!
+    name: String
+    email: String
+    assignedElderly: [String!]
+}
+
+input DeleteCaretakerInput {
+    caretakerID: Int!
+}
+
+input CreateElderlyInput {
+    elderlyID: ID
+    deviceId: String!
+    name: String!
+    age: Int
+    medicalNotes: String
+    caretakerID: String
+    familyMemberName: String
+    familyMemberRelationship: String
+    familyMemberEmail: String
+}
+
+input UpdateElderlyInput {
+    elderlyID: ID!
+    deviceId: String
+    name: String
+    age: Int
+    medicalNotes: String
+    caretakerID: String
+    familyMemberName: String
+    familyMemberRelationship: String
+    familyMemberEmail: String
+}
+
+input DeleteElderlyInput {
+    elderlyID: ID!
+}
+
+input CreateWatchDataInput {
+    deviceId: String!
+    timestamp: String!
+    heartRate: Int!
+    isMoving: Boolean!
+    motion: Float!
+    status: String!
+}
+
+input UpdateWatchDataInput {
+    deviceId: String!
+    timestamp: String!
+    heartRate: Int
+    isMoving: Boolean
+    motion: Float
+    status: String
+}
+
+input DeleteWatchDataInput {
+    deviceId: String!
+    timestamp: String!
+}
+
+input TableCaretakerFilterInput {
+    caretakerID: TableIntFilterInput
+    username: TableStringFilterInput
+    name: TableStringFilterInput
+    email: TableStringFilterInput
+    assignedElderly: TableStringFilterInput
+}
+
+input TableElderlyFilterInput {
+    elderlyID: TableIDFilterInput
+    deviceId: TableStringFilterInput
+    name: TableStringFilterInput
+    age: TableIntFilterInput
+    medicalNotes: TableStringFilterInput
+    caretakerID: TableStringFilterInput
+}
+
+input TableWatchDataFilterInput {
+    deviceId: TableStringFilterInput
+    timestamp: TableStringFilterInput
+    heartRate: TableIntFilterInput
+    isMoving: TableBooleanFilterInput
+    motion: TableFloatFilterInput
+    status: TableStringFilterInput
+}
+
+input TableBooleanFilterInput {
+    ne: Boolean
+    eq: Boolean
+    attributeExists: Boolean
+}
+
+input TableFloatFilterInput {
+    ne: Float
+    eq: Float
+    le: Float
+    lt: Float
+    ge: Float
+    gt: Float
+    between: [Float]
+    attributeExists: Boolean
+}
+
+input TableIDFilterInput {
+    ne: ID
+    eq: ID
+    le: ID
+    lt: ID
+    ge: ID
+    gt: ID
+    contains: ID
+    notContains: ID
+    between: [ID]
+    beginsWith: ID
+    attributeExists: Boolean
+    size: ModelSizeInput
+}
+
+input TableIntFilterInput {
+    ne: Int
+    eq: Int
+    le: Int
+    lt: Int
+    ge: Int
+    gt: Int
+    between: [Int]
+    attributeExists: Boolean
+}
+
+input TableStringFilterInput {
+    ne: String
+    eq: String
+    le: String
+    lt: String
+    ge: String
+    gt: String
+    contains: String
+    notContains: String
+    between: [String]
+    beginsWith: String
+    attributeExists: Boolean
+    size: ModelSizeInput
+}
+
+input ModelSizeInput {
+    ne: Int
+    eq: Int
+    le: Int
+    lt: Int
+    ge: Int
+    gt: Int
+    between: [Int]
+}
+
+schema {
+    query: Query
+    mutation: Mutation
+    subscription: Subscription
+}
